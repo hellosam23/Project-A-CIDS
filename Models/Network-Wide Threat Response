@@ -1,0 +1,22 @@
+class NetworkThreatResponse:
+    def __init__(self):
+        self.responses = []  # Store responses to threats
+
+    def trigger_responses(self, aggregated_reports):
+        """
+        Trigger appropriate responses based on the aggregated reports from the local agents
+        """
+        for report in aggregated_reports:
+            node_id = report['node_id']
+            anomaly = report['report']
+            # Example: Trigger a response based on the severity of the anomaly
+            response = self.create_response(node_id, anomaly)
+            self.responses.append(response)
+            print(f"Triggered response for anomaly at index {anomaly['data_index']} in Node {node_id}: {response}")
+
+    def create_response(self, node_id, anomaly):
+        """
+        Create a response for a detected anomaly
+        """
+        # For simplicity, we just define a basic action like "Isolate Node" for detected anomalies
+        return f"Isolate Node {node_id} due to anomaly at index {anomaly['data_index']}"
