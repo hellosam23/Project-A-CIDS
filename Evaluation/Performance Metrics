@@ -1,0 +1,26 @@
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+def evaluate_model(y_true, y_pred, scores=None):
+    """
+    Evaluate the performance of the model based on several metrics.
+    Args:
+        y_true: True labels (ground truth) for the dataset.
+        y_pred: Predicted labels by the model (0 for normal, 1 for anomaly).
+        scores: Anomaly scores predicted by the model (used for ROC AUC).
+    """
+    accuracy = accuracy_score(y_true, y_pred)
+    precision = precision_score(y_true, y_pred)
+    recall = recall_score(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
+    
+    # ROC AUC score if scores are provided
+    auc = roc_auc_score(y_true, scores) if scores is not None else None
+    
+    print(f"Accuracy: {accuracy:.4f}")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall: {recall:.4f}")
+    print(f"F1 Score: {f1:.4f}")
+    if auc is not None:
+        print(f"ROC AUC: {auc:.4f}")
+    
+    return accuracy, precision, recall, f1, auc
