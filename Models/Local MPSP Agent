@@ -1,0 +1,40 @@
+import random
+import numpy as np
+
+class LocalMPSPAgent:
+    def __init__(self, node_id, threshold=0.5):
+        self.node_id = node_id  # Unique ID for each node
+        self.threshold = threshold  # Anomaly reporting threshold (probabilistic)
+        self.reports = []  # List to store detected anomalies
+
+    def detect_anomalies(self, X):
+        """
+        Detect anomalies in data (X) and report if they exceed the threshold
+        """
+        anomaly_scores = iforest.anomaly_score(X)  # Using the Isolation Forest model for anomaly scoring
+        
+        for i, score in enumerate(anomaly_scores):
+            if score < self.threshold:  # If anomaly score is below the threshold, report it
+                self.reports.append({'data_index': i, 'score': score})
+        
+        return self.reports
+
+    def probabilistic_report(self, report, global_coordinator):
+        """
+        Use the probabilistic synchronous communication protocol to decide whether to report an anomaly
+        """
+        # Calculate probability of reporting based on the score and randomness
+        prob = self.calculate_report_probability(report)
+        
+        # Report if probability exceeds a random threshold
+        if random.random() < prob:
+            print(f"Node {self.node_id} reports anomaly at index {report['data_index']} with score {report['score']}")
+            global_coordinator.aggregate_report(self.node_id, report)
+
+    def calculate_report_probability(self, report):
+        """
+        Probability function for reporting, e.g., based on the anomaly score.
+        The higher the score, the higher the probability of reporting.
+        """
+        return 1 / (1 + np.exp(-report['score']))  # Example of a logistic function
+
