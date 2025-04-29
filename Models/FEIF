@@ -1,0 +1,97 @@
+import numpy as np
+import random
+
+# Base Isolation Forest (IF) class
+class IsolationForest:
+    def __init__(self, n_estimators=100, max_depth=10, n_features=2, splitting_threshold=0.05):
+        self.n_estimators = n_estimators  # Number of trees in the forest
+        self.max_depth = max_depth        # Maximum depth of each tree
+        self.n_features = n_features      # Number of features (dimensionality of the data)
+        self.splitting_threshold = splitting_threshold  # Threshold to create fine-grained hyperplanes
+        self.trees = []  # Will hold the trees in the forest
+
+    def fit(self, X):
+        """Fit the Isolation Forest to the data"""
+        self.trees = []
+        for _ in range(self.n_estimators):
+            tree = self._build_tree(X)
+            self.trees.append(tree)
+
+    def _build_tree(self, X, depth=0):
+        """Build a single Isolation Tree"""
+        # Base case: Stop if maximum depth is reached or we have one data point
+        if depth >= self.max_depth or len(X) <= 1:
+            return {'leaf': True, 'size': len(X)}
+
+        # Randomly select a feature
+        feature_idx = random.randint(0, self.n_features - 1)
+        
+        # Randomly select a split value in the feature range
+        min_val, max_val = np.min(X[:, feature_idx]), np.max(X[:, feature_idx])
+        split_value = random.uniform(min_val, max_val)
+        
+        # Split the data
+        left_split = X[X[:, feature_idx] <= split_value]
+        right_split = X[X[:, feature_idx] > split_value]
+
+        # If the split is too small, we won't create a valid split
+        if len(left_split) < self.splitting_threshold * len(X) or len(right_split) < self.splitting_threshold * len(X):
+            return {'leaf': True, 'size': len(X)}
+        
+        # Recursively build trees on the left and right splits
+        left_tree = self._build_tree(left_split, depth + 1)
+        right_tree = self._build_tree(right_split, depth + 1)
+
+        return {'leaf': False, 'feature_idx': feature_idx, 'split_value': split_value, 
+                'left': left_tree, 'right': right_tree}
+
+    def _calculate_path_length(self, tree, x):
+        """Calculate the path length for a point x"""
+        if tree['leaf']:
+            return tree['size']  # Path length is simply the size at the leaf
+        
+        feature_value = x[tree['feature_idx']]
+        if feature_value <= tree['split_value']:
+            return 1 + self._calculate_path_length(tree['left'], x)
+        else:
+            return 1 + self._calculate_path_length(tree['right'], x)
+
+    def anomaly_score(self, X):
+        """Calculate the anomaly score for each point in X"""
+        scores = []
+        for x in X:
+            path_lengths = [self._calculate_path_length(tree, x) for tree in self.trees]
+            avg_path_length = np.mean(path_lengths)
+            score = np.exp(-avg_path_length / self._average_path_length())
+            scores.append(score)
+        return np.array(scores)
+
+    def _average_path_length(self):
+        """Calculate the average path length across all trees in the forest"""
+        return np.mean([tree['size'] for tree in self.trees])
+
+    def predict(self, X, threshold=0.5):
+        """Predict anomalies based on the anomaly score threshold"""
+        scores = self.anomaly_score(X)
+        return (scores < threshold).astype(int)  # 1 for anomaly, 0 for normal
+
+
+# Example usage
+
+# Generate synthetic data (100 samples, 2 features)
+np.random.seed(42)
+X_normal = np.random.normal(0, 1, (100, 2))  # Normal data (100 points)
+X_anomaly = np.random.normal(5, 1, (10, 2))  # Anomalous data (10 points)
+
+# Combine the datasets (normal + anomaly)
+X = np.vstack([X_normal, X_anomaly])
+
+# Create and fit the Isolation Forest (FEIF)
+iforest = IsolationForest(n_estimators=100, max_depth=10, n_features=2, splitting_threshold=0.1)
+iforest.fit(X)
+
+# Predict anomalies
+predictions = iforest.predict(X)
+
+# Output results
+print(f"Predictions (0=normal, 1=anomaly): {predictions}")
