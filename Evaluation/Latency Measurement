@@ -1,0 +1,36 @@
+import time
+
+def measure_latency(model, X):
+    """
+    Measure the latency of the model in terms of anomaly detection and reporting.
+    """
+    start_time = time.time()  # Start time for detection
+    anomaly_scores = model.anomaly_score(X)  # Anomaly detection
+    detection_time = time.time() - start_time  # Detection time
+
+    # Simulate reporting time (could be based on communication protocol)
+    start_time = time.time()
+    report_time = simulate_reporting(anomaly_scores)  # Simulated report
+    report_time = time.time() - start_time  # Reporting time
+    
+    # Simulate aggregation and dissemination time (network coordination)
+    aggregation_time = 0.1  # Arbitrary value for simulation
+    dissemination_time = 0.1  # Arbitrary value for simulation
+    
+    total_latency = detection_time + report_time + aggregation_time + dissemination_time
+    print(f"Detection Time: {detection_time:.4f}s")
+    print(f"Reporting Time: {report_time:.4f}s")
+    print(f"Total Latency: {total_latency:.4f}s")
+    
+    return total_latency
+
+def simulate_reporting(anomaly_scores):
+    """
+    Simulate reporting time based on the number of anomalies detected.
+    """
+    num_reports = np.sum(anomaly_scores < 0.5)  # Simulate reporting for low anomaly scores
+    report_time = 0.01 * num_reports  # Arbitrary time per report
+    return report_time
+
+# Simulate latency measurement
+measure_latency(iforest, X)
