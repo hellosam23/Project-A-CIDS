@@ -1,0 +1,16 @@
+class GlobalCoordinator:
+    def __init__(self):
+        self.aggregated_reports = []  # Store aggregated reports from local agents
+
+    def aggregate_report(self, node_id, report):
+        """
+        Aggregate the report from a local MPSP agent
+        """
+        self.aggregated_reports.append({'node_id': node_id, 'report': report})
+    
+    def disseminate_reports(self):
+        """
+        Disseminate aggregated reports to all local nodes for a coordinated response
+        """
+        for report in self.aggregated_reports:
+            print(f"Disseminating report from Node {report['node_id']} on anomaly at index {report['report']['data_index']}")
