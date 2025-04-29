@@ -1,0 +1,54 @@
+from transformers import RobertaTokenizer, RobertaModel
+import torch
+import umap
+import torch.nn as nn
+import numpy as np
+
+# Load RoBERTa model and tokenizer for textual data
+tokenizer = RobertaTokenizer.from_pretrained("roberta-base")
+model = RobertaModel.from_pretrained("roberta-base")
+
+# TCN Class Definition
+class TCN(nn.Module):
+    def __init__(self, input_size, output_size, kernel_size=3, num_layers=3):
+        super(TCN, self).__init__()
+        self.tcn_layers = nn.ModuleList()
+        for i in range(num_layers):
+            in_channels = input_size if i == 0 else output_size
+            self.tcn_layers.append(nn.Conv1d(in_channels, output_size, kernel_size=kernel_size, padding=kernel_size//2))
+
+    def forward(self, x):
+        for layer in self.tcn_layers:
+            x = layer(x)
+        return x
+
+# UMAP for dimensionality reduction
+def preprocess_text(text):
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+    embeddings = outputs.last_hidden_state.mean(dim=1)  # Mean over tokens
+    return embeddings
+
+def preprocess_data(text_data, temporal_data):
+    # Step 1: Preprocess text data using RoBERTa
+    text_embeddings = [preprocess_text(text) for text in text_data]
+    text_embeddings = torch.stack(text_embeddings)
+
+    # Step 2: Process temporal data using TCN
+    tcn = TCN(input_size=temporal_data.shape[1], output_size=32)
+    temporal_output = tcn(temporal_data)
+
+    # Step 3: Reduce dimensionality using UMAP
+    data_combined = np.concatenate([text_embeddings.numpy(), temporal_output.numpy()], axis=1)
+    umap_model = umap.UMAP(n_components=2)
+    reduced_data = umap_model.fit_transform(data_combined)
+
+    return reduced_data
+
+# Example usage
+text_data = ["Vehicle is moving at high speed.", "Signal strength is low."]
+temporal_data = torch.randn(2, 64, 50)  # Example temporal data (batch_size, features, time_steps)
+
+processed_data = preprocess_data(text_data, temporal_data)
+print("Processed data shape:", processed_data.shape)
