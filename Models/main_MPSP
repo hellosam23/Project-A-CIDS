@@ -1,0 +1,26 @@
+# Create a global coordinator
+global_coordinator = GlobalCoordinator()
+
+# Create local MPSP agents (nodes in the fog network)
+node_1 = LocalMPSPAgent(node_id=1, threshold=0.6)
+node_2 = LocalMPSPAgent(node_id=2, threshold=0.5)
+
+# Example data (X) with normal and anomalous points
+X = np.random.randn(100, 2)  # 100 samples, 2 features
+
+# Assuming anomaly_model is already defined and trained
+# Detect anomalies and report them
+reports_1 = node_1.detect_anomalies(X, anomaly_model)
+for report in reports_1:
+    node_1.probabilistic_report(report, global_coordinator)
+
+reports_2 = node_2.detect_anomalies(X, anomaly_model)
+for report in reports_2:
+    node_2.probabilistic_report(report, global_coordinator)
+
+# Aggregating and disseminating reports from local agents
+global_coordinator.disseminate_reports()
+
+# Triggering network-wide responses to the aggregated reports
+network_response = NetworkThreatResponse()
+network_response.trigger_responses(global_coordinator.aggregated_reports)
