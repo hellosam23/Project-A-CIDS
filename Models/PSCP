@@ -1,0 +1,19 @@
+import random
+
+class PSCP:
+    def __init__(self, communication_rate=0.1):
+        self.communication_rate = communication_rate  # Rate at which reports are allowed
+
+    def should_report(self, anomaly_score):
+        """
+        Decide whether the anomaly should be reported, based on a probabilistic threshold
+        """
+        # Use an exponential decay function for time-based or score-based reporting
+        prob = self.calculate_probability(anomaly_score)
+        return random.random() < prob  # Report if the random number is less than the calculated probability
+
+    def calculate_probability(self, anomaly_score):
+        """
+        Example probability function based on anomaly score (higher scores mean higher probability)
+        """
+        return min(1, 0.5 * anomaly_score)  # Keep the probability capped at 1 for very high anomaly scores
