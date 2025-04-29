@@ -1,0 +1,16 @@
+def evaluate_scalability(X, y_true, model):
+    """
+    Evaluate scalability by increasing dataset size and measuring performance.
+    """
+    sizes = [100, 500, 1000, 5000]  # Different dataset sizes
+    for size in sizes:
+        X_scaled = np.vstack([X] * (size // 100))  # Simulate larger dataset
+        y_true_scaled = np.array([0] * (size // 10) + [1] * (size // 100))  # Simulate labels
+        
+        # Measure performance on the larger dataset
+        print(f"\nEvaluating scalability with {size} samples...")
+        evaluate_model(y_true_scaled, y_pred, scores)
+        measure_latency(model, X_scaled)
+
+# Simulate scalability evaluation
+evaluate_scalability(X, y_true, iforest)
