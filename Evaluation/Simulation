@@ -1,0 +1,18 @@
+# Simulate dataset (replace with actual dataset loading if available)
+np.random.seed(42)
+
+# Example datasets: 100 normal samples, 10 anomaly samples
+X_normal = np.random.normal(0, 1, (100, 2))  # Normal data (100 points)
+X_anomaly = np.random.normal(5, 1, (10, 2))  # Anomalous data (10 points)
+
+# Combine datasets
+X = np.vstack([X_normal, X_anomaly])
+y_true = np.array([0] * 100 + [1] * 10)  # 0 = normal, 1 = anomaly
+
+# Simulate anomaly detection using the FEIF anomaly detection model
+# (replace this with actual anomaly detection model)
+scores = np.random.rand(110)  # Simulated anomaly scores (between 0 and 1)
+y_pred = (scores < 0.5).astype(int)  # Predict anomalies (score < 0.5 is an anomaly)
+
+# Evaluate the model
+evaluate_model(y_true, y_pred, scores=scores)
